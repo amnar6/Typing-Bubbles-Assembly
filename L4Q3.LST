@@ -1,0 +1,54 @@
+     1                                  [org 0x0100]
+     2                                  
+     3 00000000 E91C00                  jmp start
+     4                                  
+     5 00000003 010002000300040005-     A: dw 1,2,3,4,5
+     6 0000000C 00                 
+     7 0000000D 030005000600            B: dw 3,5,6
+     8 00000013 000000000000000000-     C: dw 0,0,0,0,0    ; space for result (max 5 elements)
+     9 0000001C 00                 
+    10 0000001D 0000                    length: dw 0        ; number of elements in C
+    11                                  
+    12                                  start:
+    13 0000001F BE0000                      mov si, 0        ; index into A (bytes)
+    14 00000022 BF0000                      mov di, 0        ; index into C (bytes)
+    15 00000025 B90500                      mov cx, 5        ; number of elements in A
+    16 00000028 C706[1D00]0000              mov word [length], 0
+    17                                  
+    18                                  outer:
+    19 0000002E 81F90000                    cmp cx, 0
+    20 00000032 743E                        je end_program
+    21 00000034 8B84[0300]                  mov ax, [A+si]   ; take A[i]
+    22 00000038 BB0000                      mov bx, 0        ; index into B
+    23 0000003B BA0300                      mov dx, 3        ; number of elements in B
+    24 0000003E BD0000                      mov bp, 0        ; flag = not found
+    25                                  
+    26                                  inner:
+    27 00000041 81FA0000                    cmp dx, 0
+    28 00000045 7412                        je check_done
+    29 00000047 8B97[0D00]                  mov dx, [B+bx]   ; load B[j]
+    30 0000004B 39D0                        cmp ax, dx
+    31 0000004D 7503                        jne not_equal
+    32 0000004F BD0100                      mov bp, 1        ;found
+    33                                  not_equal:
+    34 00000052 81C30200                    add bx, 2
+    35 00000056 4A                          dec dx
+    36 00000057 EBE8                        jmp inner
+    37                                  
+    38                                  check_done:
+    39 00000059 81FD0100                    cmp bp, 1
+    40 0000005D 740C                        je skip          ; if found in B, skip
+    41                                  
+    42                                      ; store in C
+    43 0000005F 8985[1300]                  mov [C+di], ax
+    44 00000063 81C70200                    add di, 2
+    45 00000067 FF06[1D00]                  inc word [length]
+    46                                  
+    47                                  skip:
+    48 0000006B 81C60200                    add si, 2        ; next element of A
+    49 0000006F 49                          dec cx
+    50 00000070 EBBC                        jmp outer
+    51                                  
+    52                                  end_program:
+    53 00000072 B8004C                      mov ax, 4C00h
+    54 00000075 CD21                        int 21h

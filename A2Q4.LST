@@ -1,0 +1,31 @@
+     1                                  [org 0x0100]
+     2                                  
+     3 00000000 E90200                  jmp start
+     4                                  
+     5 00000003 25A4                    num: dw 0A425h     ; example number, given
+     6                                  
+     7                                  start:
+     8 00000005 A1[0300]                    mov ax, [num]   ; load number
+     9 00000008 89C3                        mov bx, ax      ; copy for reversing
+    10 0000000A B91000                      mov cx, 16      ; preperaing register, bit count
+    11 0000000D 31D2                        xor dx, dx      ; reversed bits = 0, dx will hold the reversed number
+    12                                  
+    13                                  ReverseLoop:
+    14 0000000F D1CB                        ror bx, 1       ; rotate right through carry, LSB goes to CF
+    15 00000011 D1D2                        rcl dx, 1       ; rotate carry into dx from left
+    16 00000013 E2FA                        loop ReverseLoop   ;16 iterations
+    17                                  
+    18 00000015 39D0                        cmp ax, dx    ;check if palindrome
+    19 00000017 7506                        jne NotPalin
+    20 00000019 BA0100                      mov dx, 1       ; it is palindrome
+    21 0000001C E90300                      jmp EndProg
+    22                                  
+    23                                  NotPalin:
+    24 0000001F BA0000                      mov dx, 0       ; not palindrome
+    25                                  
+    26                                  EndProg:
+    27 00000022 B8004C                    mov ax, 0x4c00
+    28 00000025 CD21                      int 0x21
+    29                                  
+    30                                  
+    31                                  ;dx ends uo as the revresed number, if its equals the original ax, the numner is a palindome

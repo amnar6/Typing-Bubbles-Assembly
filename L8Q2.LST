@@ -1,0 +1,77 @@
+     1                                  [org 0x100]
+     2 00000000 E92400                  jmp start
+     3                                  
+     4 00000003 464153544E55434546-     mainStr db 'FASTNUCEFASTNU',0
+     5 0000000C 4153544E5500       
+     6 00000012 4E5500                  subStr  db 'NU',0
+     7 00000015 FFFF                    Index   dw -1
+     8 00000017 464F554E4424            foundMsg db 'FOUND$'
+     9 0000001D 4E4F5420464F554E44-     notFoundMsg db 'NOT FOUND$'
+    10 00000026 24                 
+    11                                  
+    12                                  start:
+    13 00000027 8CC8                        mov ax, cs
+    14 00000029 8ED8                        mov ds, ax
+    15 0000002B 8EC0                        mov es, ax
+    16                                  
+    17 0000002D BE[0300]                    mov si, mainStr
+    18 00000030 BB0000                      mov bx, 0
+    19                                  
+    20                                  search_loop:
+    21 00000033 BF[1200]                    mov di, subStr
+    22 00000036 B90200                      mov cx, 2                ; length of substring "NU"
+    23                                  
+    24                                  compare_loop:
+    25 00000039 8A04                        mov al, [si]
+    26 0000003B 8A25                        mov ah, [di]
+    27 0000003D 3C00                        cmp al, 0
+    28 0000003F 7436                        je not_found             ; reached end of main string
+    29 00000041 80FC00                      cmp ah, 0
+    30 00000044 7419                        je found                 ; reached end of substring (match)
+    31 00000046 38E0                        cmp al, ah
+    32 00000048 7507                        jne no_match
+    33 0000004A 46                          inc si
+    34 0000004B 47                          inc di
+    35 0000004C E2EB                        loop compare_loop
+    36 0000004E E90E00                      jmp found
+    37                                  
+    38                                  no_match:
+    39 00000051 43                          inc bx
+    40 00000052 BE[0300]                    mov si, mainStr
+    41 00000055 01DE                        add si, bx
+    42 00000057 803C00                      cmp byte [si], 0
+    43 0000005A 75D7                        jne search_loop
+    44 0000005C E91800                      jmp not_found
+    45                                  
+    46                                  found:
+    47 0000005F 891E[1500]                  mov [Index], bx
+    48                                  
+    49                                      ; move cursor to row 5, column 24
+    50 00000063 B402                        mov ah, 02h
+    51 00000065 B700                        mov bh, 0
+    52 00000067 B605                        mov dh, 5
+    53 00000069 B218                        mov dl, 24
+    54 0000006B CD10                        int 10h
+    55                                  
+    56                                      ; print FOUND
+    57 0000006D BA[1700]                    mov dx, foundMsg
+    58 00000070 B409                        mov ah, 09h
+    59 00000072 CD21                        int 21h
+    60 00000074 E91100                      jmp done
+    61                                  
+    62                                  not_found:
+    63                                      ; move cursor to row 5, column 24
+    64 00000077 B402                        mov ah, 02h
+    65 00000079 B700                        mov bh, 0
+    66 0000007B B605                        mov dh, 5
+    67 0000007D B218                        mov dl, 24
+    68 0000007F CD10                        int 10h
+    69                                  
+    70                                      ; print NOT FOUND
+    71 00000081 BA[1D00]                    mov dx, notFoundMsg
+    72 00000084 B409                        mov ah, 09h
+    73 00000086 CD21                        int 21h
+    74                                  
+    75                                  done:
+    76 00000088 B44C                        mov ah, 4Ch
+    77 0000008A CD21                        int 21h

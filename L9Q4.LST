@@ -1,0 +1,31 @@
+     1                                  [org 0x100]
+     2                                  
+     3 00000000 E90000                  jmp start
+     4                                  
+     5                                  start:
+     6 00000003 B60A                    mov dh, 10 ; start row
+     7 00000005 B20A                    mov dl, 10 ; start column
+     8                                  
+     9                                  next:
+    10 00000007 B400                    mov ah, 0
+    11 00000009 CD16                    int 16h    ; wait for key
+    12 0000000B 3C1B                    cmp al, 27 ; is it esc key?
+    13 0000000D 7414                    je done
+    14                                  
+    15 0000000F B413                    mov ah, 13h
+    16 00000011 B001                    mov al, 1
+    17 00000013 B700                    mov bh, 0
+    18 00000015 B30E                    mov bl, 0x0E ; yellow on black
+    19 00000017 B90100                  mov cx, 1
+    20 0000001A 89E5                    mov bp, sp
+    21 0000001C CD10                    int 10h
+    22                                  
+    23 0000001E 58                      pop ax
+    24                                  
+    25 0000001F FEC2                    inc dl ; move right
+    26 00000021 EBE4                    jmp next
+    27                                  
+    28                                  done:
+    29 00000023 B44C                    mov ah, 4Ch
+    30 00000025 CD21                    int 21h
+    31                                  

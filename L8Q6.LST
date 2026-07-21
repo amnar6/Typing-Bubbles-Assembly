@@ -1,0 +1,38 @@
+     1                                  [org 0x0100]
+     2 00000000 E90D00                  jmp start
+     3                                  
+     4 00000003 444953504C41592054-     msg    db 'DISPLAY TEST'
+     5 0000000C 455354             
+     6 0000000F 0C                      msglen db 12
+     7                                  
+     8                                  start:
+     9                                      ; set data segment
+    10 00000010 8CC8                        mov ax, cs
+    11 00000012 8ED8                        mov ds, ax
+    12 00000014 B800B8                      mov ax, 0xb800
+    13 00000017 8EC0                        mov es, ax
+    14                                  
+    15                                      ;fill the screen with @ in light yellow
+    16 00000019 BF0000                      mov di, 0         ; start at top-left
+    17 0000001C B040                        mov al, '@'
+    18 0000001E B40E                        mov ah, 0x0E      
+    19 00000020 B9D007                      mov cx, 80*25     ; fill entire screen
+    20 00000023 F3AB                        rep stosw
+    21                                  
+    22                                      ; display string diagonally
+    23 00000025 BE[0300]                    mov si, msg
+    24 00000028 8A0E[0F00]                  mov cl, [msglen]   ; use CL as counter
+    25 0000002C BF0000                      mov di, 0          ; starting at top left
+    26                                  
+    27                                  diag_loop:
+    28 0000002F AC                          lodsb               ; load character from msg
+    29 00000030 B40E                        mov ah, 0x0E
+    30 00000032 AB                          stosw               ; char+attribute
+    31 00000033 81C7A200                    add di, 160 + 2     ; move one row down, one column right
+    32 00000037 E2F6                        loop diag_loop
+    33                                  
+    34 00000039 B400                        mov ah, 0
+    35 0000003B CD16                        int 16h
+    36                                  
+    37 0000003D B44C                        mov ah, 4Ch
+    38 0000003F CD21                        int 21h

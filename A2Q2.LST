@@ -1,0 +1,81 @@
+     1                                  [org 0x0100]
+     2                                  
+     3 00000000 E91F00                  jmp start
+     4                                  
+     5 00000003 FDFF0205060809          Set1 db -3, -1, 2, 5, 6, 8, 9    ;already soerted
+     6 0000000A FE02060709              Set2 db -2, 2, 6, 7, 9
+     7                                  Len1 equ 7
+     8                                  Len2 equ 5
+     9                                  
+    10 0000000F 000000000000000000-     UnionSet db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    11 00000018 000000000000000000 
+    12 00000021 00                      Count db 0
+    13                                  
+    14                                  start:
+    15 00000022 B90500                      mov cx, Len2        ; number of elements in Set2
+    16 00000025 BE0000                      mov si, 0           ; index for Set2
+    17                                  
+    18                                  NextNum:
+    19 00000028 8A84[0A00]                  mov al, [Set2 + si] ; al holfds current element from Set2
+    20                                  
+    21                                      ;al is alreadr present in unionset 
+    22 0000002C B300                        mov bl, 0           ; assume not found
+    23 0000002E BF0000                      mov di, 0           ; index for UnionSet
+    24 00000031 8A16[2100]                  mov dl, [Count]     ; number of elements in UnionSet
+    25                                  
+    26                                  CheckLoop:
+    27 00000035 80FA00                      cmp dl, 0
+    28 00000038 7412                        je NotFound    ;;union set is zero
+    29 0000003A 8ABD[0F00]                  mov bh, [UnionSet + di]   ;load current elemnet in bh
+    30 0000003E 38C7                        cmp bh, al          
+    31 00000040 7405                        je Found
+    32                                  	
+    33 00000042 47                          inc di    ;index uniojnset
+    34 00000043 FECA                        dec dl
+    35 00000045 EBEE                        jmp CheckLoop
+    36                                  
+    37                                  Found:
+    38 00000047 B301                        mov bl, 1       ;1 acts as af flag, if elemnet already exists in union, wont add
+    39 00000049 E91100                      jmp SkipAdd
+    40                                  
+    41                                  NotFound:
+    42 0000004C 80FB01                      cmp bl, 1
+    43 0000004F 740C                        je SkipAdd           ; skip if found
+    44                                  	
+    45 00000051 8A1E[2100]                  mov bl, [Count]      ; empty slot
+    46 00000055 8887[0F00]                  mov [UnionSet + bx], al
+    47 00000059 FE06[2100]                  inc  byte [Count]    ;unique elemnt added
+    48                                  
+    49                                  SkipAdd:
+    50 0000005D 46                          inc si
+    51 0000005E E2C8                        loop NextNum
+    52                                  	
+    53                                  
+    54                                  ;bubble sort
+    55                                  
+    56 00000060 8A0E[2100]                  mov cl, [Count]
+    57                                  	
+    58                                  OuterLoop:          ; sort if multiole cases
+    59 00000064 BE0000                      mov si, 0
+    60 00000067 88CD                        mov ch, cl   ;ch innerloop counterr
+    61                                  	
+    62                                  InnerLoop:     ;compares each pair
+    63                                  
+    64 00000069 8A84[0F00]                  mov al, [UnionSet + si]
+    65 0000006D 8AA4[1000]                  mov ah, [UnionSet + si + 1]
+    66 00000071 38E0                        cmp al, ah
+    67 00000073 7E08                        jle NoSwap
+    68                                  	
+    69                                  	;swap
+    70 00000075 88A4[0F00]                  mov [UnionSet + si], ah
+    71 00000079 8884[1000]                  mov [UnionSet + si + 1], al
+    72                                  	
+    73                                  NoSwap:
+    74 0000007D 46                          inc si     ;next pair
+    75 0000007E FECD                        dec ch
+    76 00000080 75E7                        jnz InnerLoop    ;jumo if not zeero
+    77 00000082 FEC9                        dec cl
+    78 00000084 75DE                        jnz OuterLoop
+    79                                  
+    80 00000086 B8004C                      mov ax, 0x4c00
+    81 00000089 CD21                        int 0x21
